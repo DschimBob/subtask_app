@@ -1,0 +1,25 @@
+{
+  "name": "Task App",
+  "author": {
+    "name": "Pierre Nespo",
+    "email": "pierre.nespo@gmail.com"
+  },
+  "parameters": [
+    {
+      "name": "configuration",
+      "type": "multiline",
+      "required": true
+    },
+    {
+      "name": "data_field",
+      "type": "number",
+      "required": true
+    }
+  ],
+
+  "defaultLocale": "en",
+  "private": true,
+  "singleInstall": true,
+  "location": "ticket_sidebar",
+  "frameworkVersion": "0.5"
+}

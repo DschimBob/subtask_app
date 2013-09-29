@@ -1,0 +1,8 @@
+<header>
+  <span class="logo"/>
+  <h3>{{setting "name"}}</h3>
+</header>
+
+<div class="well well-small">
+  <section data-main/>
+</div>

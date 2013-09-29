@@ -1,0 +1,8 @@
+<h4>{{t "parent.title"}}:</h4>
+<br/>
+<div class="row-fluid">
+  <a href="#/tickets/{{ticket.id}}">#{{ticket.id}}: {{ticket.subject}}</a>
+  <span class="ticket_status_label {{ticket.status}}">
+      <strong>{{ticket.status}}</strong>
+  </span>
+</div>

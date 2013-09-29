@@ -1,0 +1,32 @@
+{
+  "app": {
+    "description":  "Handle recurrent Tasks.",
+    "name":         "Task App",
+
+    "parameters": {
+      "configuration": {
+        "label": "Templates Definition",
+        "helpText": "A JSON structure defining the available templates"
+      },
+      "data_field": {
+        "label": "Sub-Task Data Field",
+        "helpText": "The ID of the field which will be used to hold details of sub and parent tickets"
+      }
+    }
+  },
+
+  "new":{
+    "button": "Create",
+    "button_disabled_title": "Select a task template first"
+  },
+
+  "parent": {
+    "title": "This is a subtask of the following ticket"
+  },
+  "children": {
+    "title": "Subtasks"
+  },
+  "new": {
+    "title": "Select Task Template"
+  }
+}

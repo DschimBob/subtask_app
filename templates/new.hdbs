@@ -1,0 +1,12 @@
+<div class="row-fluid">
+  <form>
+    {{t "new.title"}}:
+    <br/>
+    <select class="input-medium">
+      {{#each options}}
+      <option value="{{this.value}}">{{this.name}}</option>
+      {{/each}}
+    </select>
+    <button class="btn btn-inverse btn-large" type="button">Create Tasks</button>
+  </form>
+</div>

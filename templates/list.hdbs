@@ -1,0 +1,10 @@
+<ul>
+  {{#each tickets}}
+  <li>
+    <a href="#/tickets/{{this.id}}">{{this.subject}}</a>
+    <span class="ticket_status_label {{this.status}}">
+      <strong>{{this.status}}</strong>
+    </span>
+  </li>
+  {{/each}}
+</ul>

@@ -1,0 +1,14 @@
+<h4>{{t "children.title"}}:</h4>
+<br/>
+{{#each tickets}}
+<div class="row-fluid">
+  <div class="span10">
+    <a href="#/tickets/{{this.id}}">{{this.subject}}</a>
+  </div>
+  <div class="span2">
+    <span class="ticket_status_label {{this.status}}">
+      <strong>{{this.status}}</strong>
+    </span>
+  </div>
+</div>
+{{/each}}

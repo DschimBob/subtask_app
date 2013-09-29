@@ -1,0 +1,27 @@
+{
+  "templates": {
+    "defect": {
+      "label": "Defect Label",
+      "tasks": [ "user_account" ]
+    },
+    "question": {
+      "label": "Question Label",
+      "tasks": [ "mailbox" ]
+    },
+    "all": {
+      "label": "Create All Tasks",
+      "tasks": ["user_account", "mailbox"]
+    }
+  },
+
+  "tasks": {
+    "user_account": {
+      "label": "User Account Creation",
+      "description": "User Account Description"
+    },
+    "mailbox": {
+      "label": "Mailbox Creation",
+      "description": "mailbox Description"
+    }
+  }
+}
