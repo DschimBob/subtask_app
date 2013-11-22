@@ -25,3 +25,45 @@
     }
   }
 }
+
+----
+
+Another example
+
+----
+
+{
+  "templates": {
+    "defect": {
+      "label": "User Background check",
+      "tasks": [ "user_account" ]
+    },
+    "question": {
+      "label": "User Ban Procedure",
+      "tasks": [ "mailbox" ]
+    },
+    "question": {
+      "label": "Payment Dispute Procedure",
+      "tasks": [ "dispute" ]
+    },
+    "all": {
+      "label": "Create All Tasks",
+      "tasks": ["user_account", "mailbox"]
+    }
+  },
+
+  "tasks": {
+    "user_account": {
+      "label": "User Background check",
+      "description": "Verify this ID card"
+    },
+    "mailbox": {
+      "label": "User Ban Ticket",
+      "description": "Pleas ban this user from this system"
+    },
+    "mailbox": {
+      "label": "Payment Dispute Ticket",
+      "description": "Did he really pay?"
+    }
+  }
+}
