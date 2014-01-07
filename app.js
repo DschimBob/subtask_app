@@ -1,41 +1,6 @@
 (function() {
-  function formattedTemplateOptions(templates){
-    return _.reduce(templates,
-                    function(memo,value,key){
-                      memo.push({value: key, name: value.label});
-
-                      return memo;
-                    },[]);
-  }
-
-  function taskAsJson(params){
-    var task = {
-      ticket: {
-        subject: params.task.label + " for " + params.ticket.subject() + " (#"+ params.ticket.id() +")",
-        comment: {
-          body: params.task.description
-        },
-        custom_fields: [
-          {
-            id: Number(params.data_field),
-            value: JSON.stringify({
-              parent: {
-                id: params.ticket.id()
-              }})
-          }
-        ]
-      }
-    };
-
-    return JSON.stringify(task);
-  }
-
   return {
-    currentAncestry: { children: [] },
-    createdSubTask: 0,
-    subTaskToCreate: 0,
-    createdTickets: [],
-
+    defaultState: 'loading',
     requests: {
       createSubTask: function(data){
         return {
@@ -44,56 +9,58 @@
           dataType: 'json',
           processData: false,
           contentType: 'application/json',
-          data: data
+          data: JSON.stringify(data)
         };
       },
-      updateTicket: function(params){
+
+      updateCurrentTicket: function(data){
         return {
-          url: '/api/v2/tickets/'+params.id+'.json',
+          url: helpers.fmt('/api/v2/tickets/%@.json', this.ticket().id()),
           type: 'PUT',
           dataType: 'json',
-          data: params.data
+          data: JSON.stringify(data),
+          processData: false,
+          contentType: 'application/json'
         };
       },
+
       fetchTickets: function(ids){
         return {
-          url: '/api/v2/tickets/show_many?ids='+ids.join(',')+'.json',
+          url: helpers.fmt('/api/v2/tickets/show_many.json?ids=%@', ids),
           dataType: 'json'
         };
       }
     },
 
     events: {
-      'app.activated'           : 'onActivated',
-      'ticket.status.changed'   : 'loadIfDataReady',
-
+      'app.activated'           : 'onAppActivated',
       // DOM EVENTS
       'click form button'       : 'createSubTasks'
     },
 
-    onActivated: function() {
-      this.doneLoading = false;
-
-      this.ticketFields(this.ancestryFieldLabel()).hide();
-
-      this.loadIfDataReady();
+    onAppActivated: function(app) {
+      if (app.firstLoad) {
+        _.defer(this.initialize.bind(this));
+      }
     },
 
-    loadIfDataReady: function(){
-      if (!this.doneLoading &&
-          this.ticket()){
+    initialize: function() {
+      var ancestryField = this.ticketFields(this.ancestryFieldLabel());
 
-        this.doneLoading = true;
+      if (ancestryField) {
+        ancestryField.hide();
 
-        if (this.ancestry())
-          return this.hasAncestry();
-        return this.hasNoAncestry();
+        if (this.ancestry()) {
+          this.hasAncestry();
+        } else {
+          this.hasNoAncestry();
+        }
       }
     },
 
     hasNoAncestry: function(){
       return this.switchTo('new', {
-        options: formattedTemplateOptions(this.configuration().templates)
+        options: this.formattedTemplateOptions(this.configuration().templates)
       });
     },
 
@@ -104,7 +71,7 @@
             this.switchTo('parent', { ticket: data.tickets[0] });
           });
       } else if (this.hasChildren()){
-        this.ajax('fetchTickets', _.pluck(this.ancestry().children, 'id'))
+        this.ajax('fetchTickets', this.ancestry().children)
           .done(function(data){
             this.switchTo('children', { tickets: data.tickets });
           });
@@ -116,48 +83,80 @@
         .templates[this.selectedTaskTemplate()]
         .tasks;
 
-      this.subTaskToCreate = tasks.length;
+      this.switchTo('loading');
 
-      _.each(tasks, function(task_name){
-        this.createSubTask(task_name);
-      }, this);
-    },
+      this.when.apply(
+        this,
+        _.map(tasks, function(task_name) {
+          var task = this.configuration().tasks[task_name];
 
-    createSubTask: function(task_name){
-      var task = this.configuration().tasks[task_name];
+          var taskJson = this.taskAsJson({
+            task: task,
+            ticket: this.ticket(),
+            data_field: this.setting('data_field')
+          });
 
-      var taskJson = taskAsJson({
-        task: task,
-        ticket: this.ticket(),
-        data_field: this.setting('data_field')
-      });
-
-      this.ajax('createSubTask', taskJson).done(function(data){
-        this.currentAncestry.children.push({
-          name: task.label,
-          id: data.ticket.id
+          return this.ajax('createSubTask', taskJson);
+        }, this)
+      ).done(function() {
+        var args = Array.prototype.slice.call(arguments),
+        parsedArgs = _.map((tasks.length > 1 ? args : [ args ]), function(r) {
+          return r[0];
+        }),
+        tickets = _.map(parsedArgs, function(arg) {
+          return arg.ticket;
+        }),
+        children = _.map(tickets, function(ticket) {
+          return ticket.id;
         });
 
-        this.createdTickets.push(data.ticket);
-
-        if ((this.createdSubTask += 1) === this.subTaskToCreate){
-          this.saveCurrentAncestry();
-          this.subTaskToCreate = 0;
-          this.switchTo('children', { tickets: this.createdTickets });
-        }
-      });
+        this.saveAncestry(children);
+        this.switchTo('children', { tickets: tickets });
+      }.bind(this));
     },
 
-    saveCurrentAncestry: function(){
-      var stringified_ancestry = JSON.stringify(this.currentAncestry);
-      var data = { ticket: { fields: {} } };
+    formattedTemplateOptions: function(templates){
+      return _.reduce(templates,
+                      function(memo,value,key){
+                        memo.push({value: key, name: value.label});
 
-      this.ticket().customField('custom_field_' + this.setting('data_field'),
-                                stringified_ancestry);
+                        return memo;
+                      },[]);
+    },
 
-      data.ticket.fields[Number(this.setting('data_field'))] = stringified_ancestry;
+    taskAsJson: function(params){
+      var task = {
+        ticket: {
+          subject: params.task.label + " for " + params.ticket.subject() + " (#"+ params.ticket.id() +")",
+          comment: {
+            body: params.task.description
+          },
+          custom_fields: [
+            {
+              id: Number(params.data_field),
+              value: JSON.stringify({
+                parent: {
+                  id: params.ticket.id()
+                }})
+            }
+          ]
+        }
+      };
 
-      this.ajax('updateTicket', { id: this.ticket().id(), data: data });
+      return task;
+    },
+
+
+    saveAncestry: function(children){
+      var ancestry = JSON.stringify({ children: children });
+      var data = { ticket: { custom_fields: [
+        { id: Number(this.setting('data_field')), value: ancestry }
+      ] } };
+
+      this.ticket().customField(this.ancestryFieldLabel(),
+                                ancestry);
+
+      this.ajax('updateCurrentTicket', ancestry);
     },
 
     hasParent: function(){
