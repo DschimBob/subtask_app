@@ -125,25 +125,25 @@
     },
 
     taskAsJson: function(params){
-      var task = {
-        ticket: {
-          subject: params.task.label + " for " + params.ticket.subject() + " (#"+ params.ticket.id() +")",
-          comment: {
-            body: params.task.description
-          },
-          custom_fields: [
-            {
-              id: Number(params.data_field),
-              value: JSON.stringify({
-                parent: {
-                  id: params.ticket.id()
-                }})
-            }
-          ]
-        }
+      var attributes = {
+        subject: params.task.label + " for " + params.ticket.subject() + " (#"+ params.ticket.id() +")",
+        comment: {
+          body: params.task.description
+        },
+        custom_fields: [
+          {
+            id: Number(params.data_field),
+            value: JSON.stringify({
+              parent: {
+                id: params.ticket.id()
+              }})
+          }
+        ]
       };
 
-      return task;
+      _.extend(attributes, (template.attributes || {}));
+
+      return { ticket: attributes };
     },
 
 
