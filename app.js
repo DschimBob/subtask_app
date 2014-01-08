@@ -141,7 +141,7 @@
         ]
       };
 
-      _.extend(attributes, (template.attributes || {}));
+      _.extend(attributes, (params.task.attributes || {}));
 
       return { ticket: attributes };
     },
