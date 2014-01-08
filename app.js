@@ -156,7 +156,7 @@
       this.ticket().customField(this.ancestryFieldLabel(),
                                 ancestry);
 
-      this.ajax('updateCurrentTicket', ancestry);
+      this.ajax('updateCurrentTicket', data);
     },
 
     hasParent: function(){
